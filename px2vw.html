@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <input type="number" name="" id="inp" />
+    <div id="res"></div>
+    <ul id="cache"></ul>
+    <script>
+      const inpEl = document.querySelector('#inp')
+      const resEl = document.querySelector('#res')
+      const cacheMatchupList = localStorage.getItem('matchupList')
+      const matchupList = cacheMatchupList ? JSON.parse(cacheMatchupList) : []
+
+      function renderMatchup() {
+        const lis = matchupList
+          .sort(([a], [b]) => a - b)
+          .map(([px, vw]) => {
+            const li = document.createElement('li')
+            li.innerHTML = `${px} -> ${vw}`
+            return li
+          })
+        const targetEl = document.querySelector('#cache')
+        targetEl.innerHTML = ''
+        targetEl.append(...lis)
+      }
+
+      inpEl.addEventListener('input', (e) => {
+        resEl.innerHTML = Math.round((e.target.value / 375) * 100000) / 1000
+      })
+
+      inpEl.addEventListener('keydown', (e) => {
+        if (e.keyCode === 13) {
+          const val = inpEl.value
+          if (val && val <= 50 && !matchupList.map((v) => v[0]).includes(val)) {
+            matchupList.push([val, resEl.textContent])
+            window.localStorage.setItem(
+              'matchupList',
+              JSON.stringify(matchupList)
+            )
+            renderMatchup()
+          }
+
+          inpEl.value = ''
+          resEl.textContent = '0'
+        }
+      })
+
+      document.addEventListener('DOMContentLoaded', () => {
+        inpEl.focus()
+        if (cacheMatchupList) {
+          renderMatchup()
+        }
+      })
+    </script>
+  </body>
+</html>
